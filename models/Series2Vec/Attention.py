@@ -1,7 +1,8 @@
+import math
 import torch
 import torch.nn as nn
 from einops import rearrange
-import pandas as pd
+
 
 class Attention(nn.Module):
     def __init__(self, emb_size, num_heads, dropout):
@@ -18,10 +19,10 @@ class Attention(nn.Module):
 
     def forward(self, x):
 
-        batch_size, seq_len, _ = x.shape
-        k = self.key(x).reshape(batch_size, seq_len, self.num_heads, -1).permute(0, 2, 3, 1)
-        v = self.value(x).reshape(batch_size, seq_len, self.num_heads, -1).transpose(1, 2)
-        q = self.query(x).reshape(batch_size, seq_len, self.num_heads, -1).transpose(1, 2)
+        k = self.key(x).transpose(1, 2)
+        q = self.query(x)
+        v = self.value(x)
+
         # k,v,q shape = (batch_size, num_heads, seq_len, d_head)
 
         attn = torch.matmul(q, k) * self.scale
@@ -33,10 +34,6 @@ class Attention(nn.Module):
         # plt.show()
 
         out = torch.matmul(attn, v)
-        # out.shape = (batch_size, num_heads, seq_len, d_head)
-        out = out.transpose(1, 2)
-        # out.shape == (batch_size, seq_len, num_heads, d_head)
-        out = out.reshape(batch_size, seq_len, -1)
         # out.shape == (batch_size, seq_len, d_model)
         out = self.to_out(out)
         return out
@@ -94,60 +91,51 @@ class Attention_Rel_Scl(nn.Module):
         return out
 
 
-class Attention_Rel_Vec(nn.Module):
-    def __init__(self, emb_size, num_heads, seq_len, dropout):
-        super().__init__()
-        self.seq_len = seq_len
-        self.num_heads = num_heads
-        self.scale = emb_size ** -0.5
-        # self.to_qkv = nn.Linear(inp, inner_dim * 3, bias=False)
-        self.key = nn.Linear(emb_size, emb_size, bias=False)
-        self.value = nn.Linear(emb_size, emb_size, bias=False)
-        self.query = nn.Linear(emb_size, emb_size, bias=False)
+class SinPositionalEncoding(nn.Module):
+    r"""Inject some information about the relative or absolute position of the tokens
+        in the sequence. The positional encodings have the same dimension as
+        the embeddings, so that the two can be summed. Here, we use sine and cosine
+        functions of different frequencies.
+    .. math::
+        \text{PosEncoder}(pos, 2i) = sin(pos/10000^(2i/d_model))
+        \text{PosEncoder}(pos, 2i+1) = cos(pos/10000^(2i/d_model))
+        \text{where pos is the word position and i is the embed idx)
+    Args:
+        d_model: the embed dim (required).
+        dropout: the dropout value (default=0.1).
+        max_len: the max. length of the incoming sequence (default=1024).
+    """
 
-        self.Er = nn.Parameter(torch.randn(self.seq_len, int(emb_size/num_heads)))
+    def __init__(self, d_model, dropout=0.1, max_len=1024, scale_factor=1.0):
+        super(SinPositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
 
-        self.register_buffer(
-            "mask",
-            torch.tril(torch.ones(self.seq_len, self.seq_len))
-            .unsqueeze(0).unsqueeze(0)
-        )
+        # ration = nn.Parameter(torch.empty(1))
+        pe = torch.zeros(max_len, d_model)  # positional encoding
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
 
-        self.dropout = nn.Dropout(dropout)
-        self.to_out = nn.LayerNorm(emb_size)
+        pe[:, 0::2] = torch.sin((position * div_term)*(d_model/max_len))
+        pe[:, 1::2] = torch.cos((position * div_term)*(d_model/max_len))
+
+        # pe[:, 0::2] = torch.sin(position * div_term)
+        # pe[:, 1::2] = torch.cos(position * div_term)
+
+        # distance = torch.matmul(pe, pe.transpose(1, 0))
+        # import matplotlib.pyplot as plt
+        # plt.plot(distance[202])
+        # plt.show()
+
+        pe = scale_factor * pe.unsqueeze(0)
+        self.register_buffer('pe', pe)  # this stores the variable in the state_dict (used for non-trainable variables)
 
     def forward(self, x):
-        batch_size, seq_len, _ = x.shape
-        k = self.key(x).reshape(batch_size, seq_len, self.num_heads, -1).permute(0, 2, 3, 1)
-        v = self.value(x).reshape(batch_size, seq_len, self.num_heads, -1).transpose(1, 2)
-        q = self.query(x).reshape(batch_size, seq_len, self.num_heads, -1).transpose(1, 2)
-        # k,v,q shape = (batch_size, num_heads, seq_len, d_head)
-
-        QEr = torch.matmul(q, self.Er.transpose(0, 1))
-        Srel = self.skew(QEr)
-        # Srel.shape = (batch_size, self.num_heads, seq_len, seq_len)
-
-        attn = torch.matmul(q, k)
-        # attn shape (seq_len, seq_len)
-        attn = (attn + Srel) * self.scale
-
-        attn = nn.functional.softmax(attn, dim=-1)
-        out = torch.matmul(attn, v)
-        # out.shape = (batch_size, num_heads, seq_len, d_head)
-        out = out.transpose(1, 2)
-        # out.shape == (batch_size, seq_len, num_heads, d_head)
-        out = out.reshape(batch_size, seq_len, -1)
-        # out.shape == (batch_size, seq_len, d_model)
-        out = self.to_out(out)
-        return out
-
-    def skew(self, QEr):
-        # QEr.shape = (batch_size, num_heads, seq_len, seq_len)
-        padded = nn.functional.pad(QEr, (1, 0))
-        # padded.shape = (batch_size, num_heads, seq_len, 1 + seq_len)
-        batch_size, num_heads, num_rows, num_cols = padded.shape
-        reshaped = padded.reshape(batch_size, num_heads, num_cols, num_rows)
-        # reshaped.size = (batch_size, num_heads, 1 + seq_len, seq_len)
-        Srel = reshaped[:, :, 1:, :]
-        # Srel.shape = (batch_size, num_heads, seq_len, seq_len)
-        return Srel
+        r"""Inputs of forward function
+        Args:
+            x: the sequence fed to the positional encoder model (required).
+        Shape:
+            x: [sequence length, batch size, embed dim]
+            output: [sequence length, batch size, embed dim]
+        """
+        x = x + self.pe
+        return self.dropout(x)

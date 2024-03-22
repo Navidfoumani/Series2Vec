@@ -5,10 +5,7 @@ by showing confusion matrix, accuracy, recall, precision etc.
 
 import numpy as np
 import sys
-
 import matplotlib.pyplot as plt
-import pandas as pd
-
 from sklearn import metrics
 from tabulate import tabulate
 import math

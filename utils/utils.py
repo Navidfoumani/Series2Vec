@@ -6,9 +6,10 @@ import functools
 import time
 import ipdb
 from copy import deepcopy
-
+from torch.utils.data import Dataset, DataLoader
+from sklearn import model_selection
 import numpy as np
-import torch
+
 import xlrd
 import xlwt
 from xlutils.copy import copy
@@ -35,6 +36,16 @@ def timer(func):
     return wrapper_timer
 
 
+def split_dataset(data, label, validation_ratio):
+    splitter = model_selection.StratifiedShuffleSplit(n_splits=1, test_size=validation_ratio, random_state=1234)
+    train_indices, val_indices = zip(*splitter.split(X=np.zeros(len(label)), y=label))
+    train_data = data[train_indices]
+    train_label = label[train_indices]
+    val_data = data[val_indices]
+    val_label = label[val_indices]
+    return train_data, train_label, val_data, val_label
+
+
 def save_model(path, epoch, model, optimizer=None):
     if isinstance(model, torch.nn.DataParallel):
         state_dict = model.module.state_dict()
@@ -46,19 +57,19 @@ def save_model(path, epoch, model, optimizer=None):
         data['optimizer'] = optimizer.state_dict()
     torch.save(data, path)
 
-'''
-def save_model(epochs, model, optimizer, criterion):
-    """
-    Function to save the trained model to disk.
-    """
-    print(f"Saving final model...")
-    torch.save({
-                'epoch': epochs,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'loss': criterion,
-                }, 'outputs/final_model.pth')
-'''
+
+class TimeSeriesDataset(Dataset):
+    def __init__(self, data, labels):
+        self.data = torch.from_numpy(data).float()
+        self.labels = torch.from_numpy(labels).long()
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        sample = self.data[index]
+        label = self.labels[index]
+        return sample, label
 
 
 class SaveBestModel:
@@ -99,6 +110,7 @@ class SaveBestACCModel:
             print(f"Best validation acc: {self.best_valid_acc}")
             print(f"Saving best model for epoch: {epoch}\n")
             save_model(path, epoch, model, optimizer)
+
 
 def save_plots(train_acc, valid_acc, train_loss, valid_loss):
     """

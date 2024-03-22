@@ -1,7 +1,8 @@
 import math
-import torch
 from torch.optim.optimizer import Optimizer
-
+import torch
+import torch.nn as nn
+from torch.nn import functional as F
 
 def get_optimizer(name):
 
@@ -185,6 +186,7 @@ class PlainRAdam(Optimizer):
         return loss
 
 
+
 class AdamW(Optimizer):
 
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0, warmup=0):
@@ -257,3 +259,28 @@ class AdamW(Optimizer):
                 p.data.copy_(p_data_fp32)
 
         return loss
+
+
+
+def get_loss_module():
+    return NoFussCrossEntropyLoss(reduction='none')  # outputs loss for each batch sample
+
+
+
+def l2_reg_loss(model):
+    """Returns the squared L2 norm of output layer of given model"""
+
+    for name, param in model.named_parameters():
+        if name == 'output_layer.weight':
+            return torch.sum(torch.square(param))
+
+
+class NoFussCrossEntropyLoss(nn.CrossEntropyLoss):
+    """
+    pytorch's CrossEntropyLoss is fussy: 1) needs Long (int64) targets only, and 2) only 1D.
+    This function satisfies these requirements
+    """
+
+    def forward(self, inp, target):
+        return F.cross_entropy(inp, target.long(), weight=self.weight,
+                               ignore_index=self.ignore_index, reduction=self.reduction)
