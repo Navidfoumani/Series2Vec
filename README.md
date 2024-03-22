@@ -1,7 +1,9 @@
 # Series2Vec
 ### Update
 This is a PyTorch implementation of Similarity-based learning: A contrastive learning inspired self-supervised method for time series
-![img](https://github.com/Navidfoumani/Series2Vec/blob/ea235745017b289eed94d65130687c4c501c2446/Fig/Series2Vec.png)
+<p align="center">
+    <img src="Fig/Series2Vec_01.png">
+</p> 
 
 ### Get data from UEA Archive and HAR and Ford Challenge
 Download dataset files and place them into the specified folder
