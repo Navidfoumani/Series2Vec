@@ -1,6 +1,10 @@
 # Series2Vec
-### Update
-This is a PyTorch implementation of Similarity-based learning: A contrastive learning inspired self-supervised method for time series
+This is a PyTorch implementation of
+**Series2Vec: Similarity-based Self-supervised Representation Learning for Time Series Classification**.
+### Code Update: [22.03.2024]
+#### Note:
+If you downloaded the code prior to the latest update, please ensure to update to the current version as it is consistent with the paper.
+
 <p align="center">
     <img src="Fig/Series2Vec_01.png">
 </p> 
@@ -19,14 +23,4 @@ This code has been tested with `Python 3.7` and `3.8`.
 `pip install -r requirements.txt`
 
 ## Run
-
-To see all command options with explanations, run: `python main.py --help`
-In 'configuration.py' you can select the datasets and modify the model parameters.
-For example:
-
-`self.parser.add_argument('--epochs', type=int, default=10, help='Number of training epochs')`
-
-or you can set the paprameters:
-
-`python main.py --epochs 1500 --data_dir Datasets/UEA/Heartbeat`
 
