@@ -1,5 +1,5 @@
 # Series2Vec
-
+### Update
 This is a PyTorch implementation of Similarity-based learning: A contrastive learning inspired self-supervised method for time series
 ![img](https://github.com/Navidfoumani/Series2Vec/blob/ea235745017b289eed94d65130687c4c501c2446/Fig/Series2Vec.png)
 
