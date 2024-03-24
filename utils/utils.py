@@ -10,9 +10,9 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn import model_selection
 import numpy as np
 
-import xlrd
-import xlwt
-from xlutils.copy import copy
+# import xlrd
+#import xlwt
+#from xlutils.copy import copy
 
 import torch
 import matplotlib.pyplot as plt

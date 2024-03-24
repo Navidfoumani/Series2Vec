@@ -4,7 +4,6 @@ import logging
 import torch
 from sklearn import model_selection
 from torch.utils.data import Dataset
-from models.TS_TCC.collate_function import collate_fn
 
 
 logger = logging.getLogger(__name__)

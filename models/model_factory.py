@@ -1,7 +1,6 @@
 import logging
 from models.Series2Vec import Series2Vec
-from models.TS_TCC import TS_TCC
-from models.TF_C import TF_C
+
 
 ####
 logger = logging.getLogger('__main__')

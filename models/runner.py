@@ -2,13 +2,9 @@ import os
 from models.model_factory import Model_factory
 from models.optimizers import get_optimizer, get_loss_module
 from torch.utils.data import DataLoader
-from dataset.dataloader import dataset_class
+from Dataset.dataloader import dataset_class
 from models.Series2Vec.S2V_training import *
-from models.TS_TCC.TS_TCC_training import *
-from models.TS_TCC.TC import TC
-from models.TS_TCC.collate_function import collate_fn
-from models.TF_C.collate_function import collate_fn_tfc
-from models.TF_C.TF_C_training import *
+
 
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score
 from sklearn.metrics import confusion_matrix
@@ -24,13 +20,10 @@ logger = logging.getLogger('__main__')
 def choose_trainer(model, train_loader, test_loader, config, conf_mat, type):
     if config['Model_Type'][0] == 'Series2Vec':
         S_trainer = S2V_S_Trainer(model, train_loader, test_loader, config, print_conf_mat=conf_mat)
-    if config['Model_Type'][0] == 'TS_TCC':
-        S_trainer = TS_TCC_S_Trainer(model, train_loader, test_loader, config, print_conf_mat=conf_mat)
-
     return S_trainer
 
 
-def S2V_pre_training(config, Data):
+def pre_training(config, Data):
     logger.info("Creating Distance based Self Supervised model ...")
     model = Model_factory(config, Data)
     optim_class = get_optimizer("RAdam")
