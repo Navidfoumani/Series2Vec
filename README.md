@@ -11,7 +11,8 @@ If you downloaded the code prior to the latest update, please ensure to update t
 
 ### Get data from UEA Archive and HAR and Ford Challenge
 Download dataset files and place them into the specified folder
-UEA: http://www.timeseriesclassification.com/Downloads/Archives/Multivariate2018_ts.zip
+UEA: [Here](https://www.timeseriesclassification.com/aeon-toolkit/Archives/Multivariate2018_ts.zip)
+
 Copy the datasets folder to: Datasets/UEA/
 
 ## Setup
