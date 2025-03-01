@@ -41,3 +41,23 @@ _Instructions are for Unix-based systems (e.g., Linux, MacOS)._
 ```bash
 git clone <repository-url>
 cd <repository-folder>
+
+
+## Citation
+If you find **Series2vec** useful for your research, please consider citing this paper using the following information:
+
+````
+```
+@article{series2vec2024,
+  title={Series2vec: similarity-based self-supervised representation learning for time series classification},
+  author={Foumani, Navid Mohammadi and Tan, Chang Wei and Webb, Geoffrey I and Rezatofighi, Hamid and Salehi, Mahsa},
+  journal={Data Mining and Knowledge Discovery},
+  volume={38},
+  number={4},
+  pages={2520--2544},
+  year={2024},
+  publisher={Springer}
+}
+
+```
+````
