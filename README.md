@@ -1,4 +1,4 @@
-# Series2Vec
+# Series2Vec Test
 This is a PyTorch implementation of
 **Series2Vec: Similarity-based Self-supervised Representation Learning for Time Series Classification**.
 ### Code Update: [22.03.2024]
