@@ -75,41 +75,35 @@ class S2V_SS_Trainer(BaseTrainer):
         for i, batch in enumerate(self.train_loader):
             X, _, IDs = batch
 
-            Distance_out, Distance_out_f = self.model.Pretrain_forward(X.to(self.device))
+            Distance_out, Distance_out_f, rep_out, rep_out_f = self.model.Pretrain_forward(X.to(self.device))
+            '''
+            y = rep_out - rep_out.mean(dim=0)
+            std_y = torch.sqrt(y.var(dim=0) + 0.0001)
+            std_loss = torch.mean(F.relu(1 - std_y))
+            cov_y = (y.T @ y) / (len(rep_out) - 1)
+            cov_loss = off_diagonal(cov_y).pow_(2).sum().div(y.shape[-1])
+            '''
+
             # Create a mask to select only the lower triangular values
             mask = torch.tril(torch.ones_like(Distance_out), diagonal=-1).bool()
             Distance_out = torch.masked_select(Distance_out, mask)
             Distance_out = Distance_normalizer(Distance_out)
-
             Distance_out_f = torch.masked_select(Distance_out_f, mask)
             Distance_out_f = Distance_normalizer(Distance_out_f)
-
-            # X_smooth = moving_average_smooth(X, 3)
-
             Dtw_Distance = cuda_soft_DTW(self.sdtw, X, len(X))
             Dtw_Distance = Distance_normalizer(Dtw_Distance)
-
-            # Euclidean_Distance = Euclidean_Dis(X, len(X))
-            # Euclidean_Distance = Distance_normalizer(Euclidean_Distance)
             X_f = filter_frequencies(X)
-            # X_f = fft.fft2(X, dim=(-2, -1))
             Euclidean_Distance_f = Euclidean_Dis(X_f, len(X_f))
             Euclidean_Distance_f = Distance_normalizer(Euclidean_Distance_f)
-
-            # temporal_loss = torch.nn.functional.mse_loss(Distance_out, Dtw_Distance)
-            # frequency_loss = torch.nn.functional.mse_loss(Distance_out_f, Euclidean_Distance_f)
             temporal_loss = F.smooth_l1_loss(Distance_out, Dtw_Distance)
             frequency_loss = F.smooth_l1_loss(Distance_out_f, Euclidean_Distance_f)
 
             total_loss = temporal_loss + frequency_loss
-            # Zero gradients, perform a backward pass, and update the weights.
             self.optimizer.zero_grad()
             total_loss.backward()
 
-            # torch.nn.utils.clip_grad_value_(self.model.parameters(), clip_value=1.0)
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=4.0)
             self.optimizer.step()
-
             with torch.no_grad():
                 total_samples += 1
                 epoch_loss += total_loss.item()
@@ -131,6 +125,11 @@ class S2V_SS_Trainer(BaseTrainer):
             result_file.close()
 
         return self.epoch_metrics
+
+def off_diagonal(x):
+    n, m = x.shape
+    assert n == m
+    return x.flatten()[:-1].view(n - 1, n + 1)[:, 1:].flatten()
 
 
 class S2V_S_Trainer(BaseTrainer):

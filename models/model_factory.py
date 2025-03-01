@@ -16,10 +16,13 @@ def Model_factory(config, data):
 
     if config['Model_Type'][0] == 'Series2Vec':
         model = Series2Vec.Seires2Vec(config, num_classes=config['num_labels'])
+    '''
     if config['Model_Type'][0] == 'TS_TCC':
         model = TS_TCC.TS_TCC(config, num_classes=config['num_labels'])
     if config['Model_Type'][0] == 'TF_C':
         model = TF_C.TF_C(config, num_classes=config['num_labels'])
+    '''
+
 
     logger.info("Model:\n{}".format(model))
     logger.info("Total number of parameters: {}".format(count_parameters(model)))

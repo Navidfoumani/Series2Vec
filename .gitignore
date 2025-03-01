@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv
+Dataset/Benchmarks
+Results
+summary

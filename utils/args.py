@@ -62,14 +62,14 @@ def create_dirs(dirs):
 
 
 # -------------------------------------------- Input and Output --------------------------------------------------------
-parser.add_argument('--dataset', default='Benchmarks', choices={'Benchmarks', 'UEA', 'UCR'})
+parser.add_argument('--dataset', default='Benchmarks2', choices={'Benchmarks', 'UEA', 'UCR'})
 parser.add_argument('--output_dir', default='Results',
                     help='Root output directory. Must exist. Time-stamped directories will be created inside.')
 parser.add_argument('--Norm', type=bool, default=False, help='Data Normalization')
 parser.add_argument('--val_ratio', type=float, default=0.2, help="Proportion of the train-set to be used as validation")
 parser.add_argument('--print_interval', type=int, default=10, help='Print batch info every this many batches')
 # ------------------------------------- Model Parameter and Hyperparameter ---------------------------------------------
-parser.add_argument('--Training_mode', default='Supervised', choices={'Pre_Training', 'Linear_Probing', 'Supervised'})
+parser.add_argument('--Training_mode', default='Pre_Training', choices={'Pre_Training', 'Linear_Probing', 'Supervised'})
 parser.add_argument('--Model_Type', default=['Series2Vec'], choices={'Series2Vec', 'TS_TCC', 'TF_C'})
 parser.add_argument('--layers', type=int, default=4, help="Number of layers for input conv encoders")
 parser.add_argument('--emb_size', type=int, default=16, help='Internal dimension of transformer embeddings')
@@ -77,7 +77,7 @@ parser.add_argument('--dim_ff', type=int, default=256, help='Dimension of dense 
 parser.add_argument('--rep_size', type=int, default=320, help='Representation dimension')
 parser.add_argument('--num_heads', type=int, default=8, help='Number of multi-headed attention heads')
 # -------------------------------------Training Parameters/ Hyper-Parameters -----------------------------------------
-parser.add_argument('--epochs', type=int, default=5, help='Number of training epochs')
+parser.add_argument('--epochs', type=int, default=100, help='Number of training epochs')
 parser.add_argument('--batch_size', type=int, default=64, help='Training batch size')
 parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
 parser.add_argument('--dropout', type=float, default=0.01, help='Dropout regularization ratio')

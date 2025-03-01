@@ -10,33 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def data_loader(config):
-    if config['problem'] =='TUEV':
-        Data = tuev_loader(config)
-    else:
-        Data = numpy_loader(config)
-    return Data
-
-
-def tuev_loader(config):
-    Data = {}
-    data_path = config['data_dir'] + '/' + config['problem']
-    Data['train_data'] = np.load(data_path + '/' + 'train_data.npy', allow_pickle=True)
-    Data['train_label'] = np.load(data_path + '/' + 'train_label.npy', allow_pickle=True)
-    Data['val_data'] = np.load(data_path + '/' + 'val_data.npy', allow_pickle=True)
-    Data['val_label'] = np.load(data_path + '/' + 'val_label.npy', allow_pickle=True)
-    Data['All_train_data'] = np.load(data_path + '/' + 'All_train_data.npy', allow_pickle=True)
-    Data['All_train_label'] =np.load(data_path + '/' + 'All_train_label.npy', allow_pickle=True)
-    Data['test_data'] = np.load(data_path + '/' + 'test_data.npy', allow_pickle=True)
-    Data['test_label'] = np.load(data_path + '/' + 'test_label.npy', allow_pickle=True)
-    Data['max_len'] = Data['train_data'].shape[1]
-
-    logger.info("{} samples will be used for self-supervised training".format(len(Data['All_train_label'])))
-    logger.info("{} samples will be used for fine tuning ".format(len(Data['train_label'])))
-    samples, channels, time_steps = Data['train_data'].shape
-    logger.info(
-        "Train Data Shape is #{} samples, {} channels, {} time steps ".format(samples, channels, time_steps))
-    logger.info("{} samples will be used for validation".format(len(Data['val_label'])))
-    logger.info("{} samples will be used for test".format(len(Data['test_label'])))
+    Data = numpy_loader(config)
     return Data
 
 
@@ -55,22 +29,20 @@ def numpy_loader(config):
             Data['train_label'] = Data_npy.item().get('train_label')
             Data['val_data'] = Data_npy.item().get('val_data')
             Data['val_label'] = Data_npy.item().get('val_label')
-            # Data['All_train_data'] = Data_npy.item().get('All_train_data')
-            # Data['All_train_label'] = Data_npy.item().get('All_train_label')
             Data['test_data'] = Data_npy.item().get('test_data')
             Data['test_label'] = Data_npy.item().get('test_label')
             Data['max_len'] = Data['train_data'].shape[1]
         else:
             Data['train_data'], Data['train_label'], Data['val_data'], Data['val_label'] = \
                 split_dataset(Data_npy.item().get('train_data'), Data_npy.item().get('train_label'), 0.1)
-            Data['All_train_data'] = Data_npy.item().get('train_data')
-            Data['All_train_label'] = Data_npy.item().get('train_label')
             Data['test_data'] = Data_npy.item().get('test_data')
             Data['test_label'] = Data_npy.item().get('test_label')
             Data['max_len'] = Data['train_data'].shape[2]
 
-        logger.info("{} samples will be used for training".format(len(Data['train_label'])))
-        samples, channels, time_steps = Data['train_data'].shape
+        Data['All_train_data'] = np.concatenate((Data['train_data'], Data['val_data']))
+        Data['All_train_label'] = np.concatenate((Data['train_label'], Data['val_label']))
+        logger.info("{} samples will be used for training".format(len(Data['All_train_data'])))
+        samples, channels, time_steps = Data['All_train_data'].shape
         logger.info(
             "Train Data Shape is #{} samples, {} channels, {} time steps ".format(samples, channels, time_steps))
         logger.info("{} samples will be used for testing".format(len(Data['test_label'])))

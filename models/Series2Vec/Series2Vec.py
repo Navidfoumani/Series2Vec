@@ -64,9 +64,10 @@ class Seires2Vec(nn.Module):
         x_f = x_f.permute(2, 0, 1)
         # Distance out ---------------------------
         Rep_out = out.squeeze()
+        Rep_out_f = x_f.squeeze()
         distance = torch.cdist(Rep_out, Rep_out)
-        distance_f = torch.cdist(x_f, x_f)
-        return distance, distance_f
+        distance_f = torch.cdist(Rep_out_f, Rep_out_f)
+        return distance, distance_f, Rep_out, Rep_out_f
 
     def forward(self, x):
         x_src = self.embed_layer(x)
