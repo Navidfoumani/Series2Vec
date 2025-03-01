@@ -45,7 +45,7 @@ For example:
 
 or you can set the parameters:
 
-`python experiments/demo.py --dataset UEA`
+`python main.py --dataset Benchmarks`
 
 
 ## Citation

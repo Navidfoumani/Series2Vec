@@ -91,7 +91,7 @@ def pre_training(config, Data):
     all_metrics['LP_LGR_ACC'] = LP_acc_test
     return best_aggr_metrics_test, all_metrics
 
-
+'''
 def TS_TCC_pre_training(config, Data):
     logger.info("Creating Distance based Self Supervised model ...")
     model = Model_factory(config, Data)
@@ -215,6 +215,8 @@ def TF_C_pre_training(config, Data):
     all_metrics['LP_LGR_ACC'] = 0
     return best_aggr_metrics_test, all_metrics
 
+
+'''
 
 def linear_probing():
     return
