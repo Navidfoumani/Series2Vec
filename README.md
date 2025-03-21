@@ -37,7 +37,7 @@ You can  download it from [the official UEA website](https://www.timeseriesclass
 
 _Instructions are for Unix-based systems (e.g., Linux, MacOS)._
 
-To see all command options with explanations, run: `python main.py --help`
+To see all command options with explanations, run: `python main.py --help`.
 In `utils/args.py` you can select the datasets and modify the model parameters.
 For example:
 
